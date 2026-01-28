@@ -73,7 +73,7 @@ const Clients: React.FC = () => {
 
       await actions.createClient({
         name: newClient.name || newClient.igNickname,
-        email: newClient.email || `${newClient.igNickname.replace('@', '')}@instagram.placeholder`,
+        email: newClient.email || '',
         instagram_handle: newClient.igNickname,
         phone: newClient.contact || undefined,
         package_id: mainPackageId,
@@ -166,6 +166,32 @@ const Clients: React.FC = () => {
     }
   };
 
+  const handleCompleteClient = async () => {
+    if (!selectedClient) return;
+
+    setIsSubmitting(true);
+    try {
+      await actions.updateClient(selectedClient.id, { status: ProjectStatus.COMPLETED });
+    } catch (err) {
+      console.error('Failed to complete client:', err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleArchiveClient = async () => {
+    if (!selectedClient) return;
+
+    setIsSubmitting(true);
+    try {
+      await actions.updateClient(selectedClient.id, { status: ProjectStatus.ARCHIVED });
+    } catch (err) {
+      console.error('Failed to archive client:', err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleToggleTaskStatus = async (taskId: string, currentStatus: TaskStatus) => {
     setUpdatingTaskId(taskId);
     try {
@@ -217,13 +243,21 @@ const Clients: React.FC = () => {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <button onClick={() => {}} className="flex items-center gap-2 bg-secondary text-primary px-4 py-2 rounded-xl font-bold text-sm hover:brightness-110">
-                <CheckCircle size={18} />
-                Completa
+              <button
+                onClick={handleCompleteClient}
+                disabled={isSubmitting || selectedClient.status === ProjectStatus.COMPLETED}
+                className="flex items-center gap-2 bg-secondary text-primary px-4 py-2 rounded-xl font-bold text-sm hover:brightness-110 disabled:opacity-50"
+              >
+                {isSubmitting ? <Loader2 size={18} className="animate-spin" /> : <CheckCircle size={18} />}
+                {selectedClient.status === ProjectStatus.COMPLETED ? 'Completato' : 'Completa'}
               </button>
-              <button onClick={() => {}} className="flex items-center gap-2 bg-white/20 px-4 py-2 rounded-xl font-bold text-sm hover:bg-white/30">
-                <Archive size={18} />
-                Archivia
+              <button
+                onClick={handleArchiveClient}
+                disabled={isSubmitting || selectedClient.status === ProjectStatus.ARCHIVED}
+                className="flex items-center gap-2 bg-white/20 px-4 py-2 rounded-xl font-bold text-sm hover:bg-white/30 disabled:opacity-50"
+              >
+                {isSubmitting ? <Loader2 size={18} className="animate-spin" /> : <Archive size={18} />}
+                {selectedClient.status === ProjectStatus.ARCHIVED ? 'Archiviato' : 'Archivia'}
               </button>
             </div>
           </div>
@@ -287,7 +321,7 @@ const Clients: React.FC = () => {
                           <div><p className="text-[10px] text-gray-400 font-bold uppercase">Instagram</p><p className="font-medium">{selectedClient.instagramHandle}</p></div>
                         </div>
                       )}
-                      {selectedClient.email && (
+                      {selectedClient.email && !selectedClient.email.includes('placeholder') && (
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400"><Mail size={20} /></div>
                           <div><p className="text-[10px] text-gray-400 font-bold uppercase">Email</p><p className="font-medium">{selectedClient.email}</p></div>
@@ -664,7 +698,7 @@ const Clients: React.FC = () => {
               <p className="text-sm text-gray-500 mb-6">{client.name || client.company}</p>
 
               <div className="space-y-3 mb-6">
-                {client.email && (
+                {client.email && !client.email.includes('placeholder') && (
                   <div className="flex items-center gap-3 text-sm text-gray-500">
                     <Mail size={16} className="text-gray-400" />
                     <span>{client.email}</span>

@@ -65,7 +65,6 @@ const Layout: React.FC<LayoutProps> = ({ children, activeView, onViewChange }) =
     : user?.profile?.role === 'manager' ? 'Manager'
     : user?.profile?.role === 'content_creator' ? 'Content Creator'
     : 'Designer';
-  const userAvatar = user?.profile?.avatar_url || `https://picsum.photos/seed/${user?.id || 'default'}/100`;
 
   return (
     <div className="flex h-screen bg-[#F9FAFB] text-gray-800">
@@ -177,15 +176,10 @@ const Layout: React.FC<LayoutProps> = ({ children, activeView, onViewChange }) =
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="text-right hidden sm:block">
+              <div className="text-right">
                 <p className="text-sm font-bold text-gray-800 leading-tight">{userName}</p>
                 <p className="text-xs text-gray-400">{userRole}</p>
               </div>
-              <img
-                src={userAvatar}
-                alt="Profilo"
-                className="w-10 h-10 rounded-xl object-cover ring-2 ring-gray-50 shadow-sm"
-              />
             </div>
           </div>
         </header>

@@ -9,6 +9,7 @@ import {
   Activity,
   TaskStatus,
   PaymentStatus,
+  ProjectStatus,
   dbClientToClient,
   dbTaskToTask,
   dbPackageToTemplate,
@@ -16,6 +17,7 @@ import {
   dbUserProfileToTeamMember,
   taskStatusToDb,
   paymentStatusToDb,
+  projectStatusToDb,
 } from '../types';
 import * as api from './api';
 import { useAuth } from '../contexts/AuthContext';
@@ -315,15 +317,17 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const updateClient = async (clientId: string, updates: Partial<Client>): Promise<void> => {
     if (!user) throw new Error('Not authenticated');
 
-    await api.updateClient(clientId, {
-      name: updates.name,
-      email: updates.email,
-      phone: updates.phone,
-      instagram_handle: updates.instagramHandle,
-      company_name: updates.company,
-      actual_price: updates.totalPrice,
-      deadline: updates.deadline,
-    });
+    const dbUpdates: Record<string, unknown> = {};
+    if (updates.name !== undefined) dbUpdates.name = updates.name;
+    if (updates.email !== undefined) dbUpdates.email = updates.email;
+    if (updates.phone !== undefined) dbUpdates.phone = updates.phone;
+    if (updates.instagramHandle !== undefined) dbUpdates.instagram_handle = updates.instagramHandle;
+    if (updates.company !== undefined) dbUpdates.company_name = updates.company;
+    if (updates.totalPrice !== undefined) dbUpdates.actual_price = updates.totalPrice;
+    if (updates.deadline !== undefined) dbUpdates.deadline = updates.deadline;
+    if (updates.status !== undefined) dbUpdates.status = projectStatusToDb[updates.status];
+
+    await api.updateClient(clientId, dbUpdates);
 
     // Refetch client to get updated data
     const clientsData = await api.fetchClients();

@@ -4,6 +4,8 @@ import Dashboard from './components/Dashboard';
 import Tasks from './components/Tasks';
 import Clients from './components/Clients';
 import Payments from './components/Payments';
+import Calendar from './components/Calendar';
+import Analytics from './components/Analytics';
 import { Login } from './components/Login';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { StoreProvider } from './services/store';
@@ -45,6 +47,10 @@ function AppContent() {
         return <Clients />;
       case 'payments':
         return <Payments />;
+      case 'calendar':
+        return <Calendar />;
+      case 'analytics':
+        return <Analytics />;
       default:
         return (
           <div className="flex flex-col items-center justify-center h-full text-gray-400 space-y-4">
