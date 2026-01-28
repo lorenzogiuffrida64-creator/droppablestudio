@@ -1,0 +1,8 @@
+{
+  "name": "Droppablestudio CRM",
+  "description": "A specialized streetwear agency CRM with automated task distribution, kanban management, and real-time project tracking.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
