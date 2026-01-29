@@ -202,14 +202,15 @@ const Analytics: React.FC = () => {
         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
           <div className="flex items-center justify-between mb-6">
             <h3 className="font-bold text-lg">Fatturato</h3>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <div className="relative">
                 <button
                   onClick={() => setShowInfo(!showInfo)}
-                  className="p-1.5 hover:bg-gray-100 rounded-lg transition-all"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg transition-all text-sm font-medium"
                   title="Come viene calcolato"
                 >
-                  <Info size={18} className="text-gray-400" />
+                  <Info size={16} />
+                  <span>Info</span>
                 </button>
                 {showInfo && (
                   <div className="absolute right-0 top-full mt-2 w-72 p-4 bg-white border border-gray-200 rounded-xl shadow-lg z-10">
@@ -234,10 +235,11 @@ const Analytics: React.FC = () => {
               </div>
               <button
                 onClick={handleResetRevenue}
-                className="p-1.5 hover:bg-red-50 rounded-lg transition-all group"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition-all text-sm font-medium"
                 title="Azzera fatturato archiviato"
               >
-                <RefreshCw size={18} className="text-gray-400 group-hover:text-red-500" />
+                <RefreshCw size={16} />
+                <span>Reset</span>
               </button>
             </div>
           </div>

@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   ArrowUpRight,
   Plus,
@@ -7,7 +7,9 @@ import {
   Users,
   FolderKanban,
   CheckCircle2,
-  Euro
+  Euro,
+  Info,
+  RefreshCw
 } from 'lucide-react';
 import { useStore } from '../services/store';
 import { ProjectStatus, TaskStatus } from '../types';
@@ -19,7 +21,27 @@ interface DashboardProps {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
-  const { state } = useStore();
+  const { state, actions } = useStore();
+  const [showInfo, setShowInfo] = useState(false);
+
+  const handleResetRevenue = () => {
+    if (window.confirm(
+      '⚠️ ATTENZIONE!\n\n' +
+      'Stai per azzerare il fatturato archiviato dai clienti eliminati.\n\n' +
+      'Questa azione NON può essere annullata.\n\n' +
+      'Il totale incassato verrà ricalcolato solo dai clienti attualmente presenti.\n\n' +
+      'Sei sicuro di voler continuare?'
+    )) {
+      actions.resetArchivedRevenue();
+    }
+  };
+
+  const formatCurrency = (amount: number) => {
+    if (amount >= 1000) {
+      return `€${(amount / 1000).toFixed(1).replace('.0', '')}k`;
+    }
+    return `€${amount}`;
+  };
 
   // Calculate real metrics from state
   const totalProjects = state.clients.length;
@@ -101,6 +123,38 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             </div>
             <div>
               <p className="text-4xl font-bold mb-1">{metric.value}</p>
+              {metric.label === 'Pagati' && (
+                <div className="flex items-center gap-2 mt-2">
+                  <div className="relative">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setShowInfo(!showInfo); }}
+                      className="flex items-center gap-1 px-2 py-1 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-md transition-all text-xs font-medium"
+                    >
+                      <Info size={12} />
+                      Info
+                    </button>
+                    {showInfo && (
+                      <div className="absolute left-0 top-full mt-2 w-64 p-3 bg-white border border-gray-200 rounded-xl shadow-lg z-10 text-gray-800">
+                        <p className="text-xs font-semibold mb-2">Come viene calcolato:</p>
+                        <ul className="text-xs text-gray-500 space-y-1">
+                          <li>• Somma prezzo clienti: {formatCurrency(clientRevenue)}</li>
+                          <li>• Archiviato: {formatCurrency(state.archivedRevenue)}</li>
+                        </ul>
+                        <button onClick={() => setShowInfo(false)} className="mt-2 text-xs text-primary font-medium">
+                          Chiudi
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleResetRevenue(); }}
+                    className="flex items-center gap-1 px-2 py-1 bg-red-100 hover:bg-red-200 text-red-600 rounded-md transition-all text-xs font-medium"
+                  >
+                    <RefreshCw size={12} />
+                    Reset
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         ))}
