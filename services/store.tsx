@@ -56,7 +56,8 @@ type Action =
   | { type: 'ADD_PAYMENT'; payload: { clientId: string; payment: Payment } }
   | { type: 'ADD_ACTIVITY'; payload: Activity }
   | { type: 'SET_TEAM_STATUS'; payload: { id: string; status: 'online' | 'offline' } }
-  | { type: 'ADD_ARCHIVED_REVENUE'; payload: number };
+  | { type: 'ADD_ARCHIVED_REVENUE'; payload: number }
+  | { type: 'RESET_ARCHIVED_REVENUE' };
 
 const ARCHIVED_REVENUE_KEY = 'crm_archived_revenue';
 
@@ -98,6 +99,7 @@ const storeContext = createContext<{
     addTaskNote: (taskId: string, content: string, category: Note['category']) => Promise<void>;
     addPayment: (clientId: string, payment: Omit<Payment, 'id'>) => Promise<void>;
     refreshData: () => Promise<void>;
+    resetArchivedRevenue: () => void;
   };
 } | undefined>(undefined);
 
@@ -205,6 +207,13 @@ function reducer(state: State, action: Action): State {
       return {
         ...state,
         archivedRevenue: newArchivedRevenue,
+      };
+    }
+    case 'RESET_ARCHIVED_REVENUE': {
+      saveArchivedRevenue(0);
+      return {
+        ...state,
+        archivedRevenue: 0,
       };
     }
     default:
@@ -550,6 +559,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     await loadData();
   };
 
+  const resetArchivedRevenue = () => {
+    dispatch({ type: 'RESET_ARCHIVED_REVENUE' });
+  };
+
   const actions = {
     createClient,
     updateClient,
@@ -561,6 +574,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     addTaskNote,
     addPayment,
     refreshData,
+    resetArchivedRevenue,
   };
 
   return (

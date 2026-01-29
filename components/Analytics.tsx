@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   TrendingUp, Users, Euro, CheckCircle2,
-  BarChart3, PieChart, Activity, Loader2, Calendar
+  BarChart3, PieChart, Activity, Loader2, Calendar, RefreshCw, Info
 } from 'lucide-react';
 import { useStore } from '../services/store';
 import { ProjectStatus, TaskStatus, PaymentStatus } from '../types';
@@ -9,7 +9,20 @@ import { differenceInDays, format, subDays } from 'date-fns';
 import { it } from 'date-fns/locale';
 
 const Analytics: React.FC = () => {
-  const { state } = useStore();
+  const { state, actions } = useStore();
+  const [showInfo, setShowInfo] = useState(false);
+
+  const handleResetRevenue = () => {
+    if (window.confirm(
+      '⚠️ ATTENZIONE!\n\n' +
+      'Stai per azzerare il fatturato archiviato dai clienti eliminati.\n\n' +
+      'Questa azione NON può essere annullata.\n\n' +
+      'Il totale incassato verrà ricalcolato solo dai clienti attualmente presenti.\n\n' +
+      'Sei sicuro di voler continuare?'
+    )) {
+      actions.resetArchivedRevenue();
+    }
+  };
 
   // Calculate metrics
   const totalClients = state.clients.length;
@@ -189,7 +202,44 @@ const Analytics: React.FC = () => {
         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
           <div className="flex items-center justify-between mb-6">
             <h3 className="font-bold text-lg">Fatturato</h3>
-            <BarChart3 size={20} className="text-gray-400" />
+            <div className="flex items-center gap-2">
+              <div className="relative">
+                <button
+                  onClick={() => setShowInfo(!showInfo)}
+                  className="p-1.5 hover:bg-gray-100 rounded-lg transition-all"
+                  title="Come viene calcolato"
+                >
+                  <Info size={18} className="text-gray-400" />
+                </button>
+                {showInfo && (
+                  <div className="absolute right-0 top-full mt-2 w-72 p-4 bg-white border border-gray-200 rounded-xl shadow-lg z-10">
+                    <p className="text-sm text-gray-600 mb-2">
+                      <strong>Come viene calcolato:</strong>
+                    </p>
+                    <ul className="text-xs text-gray-500 space-y-1">
+                      <li>• Somma del prezzo totale di tutti i clienti</li>
+                      <li>• + Fatturato archiviato da clienti eliminati</li>
+                      <li className="pt-2 border-t border-gray-100 mt-2">
+                        <strong>Archiviato:</strong> {formatCurrency(state.archivedRevenue)}
+                      </li>
+                    </ul>
+                    <button
+                      onClick={() => setShowInfo(false)}
+                      className="mt-3 text-xs text-primary font-medium"
+                    >
+                      Chiudi
+                    </button>
+                  </div>
+                )}
+              </div>
+              <button
+                onClick={handleResetRevenue}
+                className="p-1.5 hover:bg-red-50 rounded-lg transition-all group"
+                title="Azzera fatturato archiviato"
+              >
+                <RefreshCw size={18} className="text-gray-400 group-hover:text-red-500" />
+              </button>
+            </div>
           </div>
           <div className="space-y-4">
             <div className="flex items-center justify-between p-4 bg-green-50 rounded-xl">
