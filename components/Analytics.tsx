@@ -17,12 +17,9 @@ const Analytics: React.FC = () => {
   const completedClients = state.clients.filter(c => c.status === ProjectStatus.COMPLETED).length;
   const archivedClients = state.clients.filter(c => c.status === ProjectStatus.ARCHIVED).length;
 
-  // Revenue metrics (includes archived revenue from deleted clients)
-  const clientRevenue = state.clients.reduce((sum, c) =>
-    sum + c.payments.reduce((pSum, p) => pSum + p.amount, 0), 0
-  );
+  // Revenue metrics (client added = already paid)
+  const clientRevenue = state.clients.reduce((sum, c) => sum + c.totalPrice, 0);
   const totalRevenue = clientRevenue + state.archivedRevenue;
-  const potentialRevenue = state.clients.reduce((sum, c) => sum + c.totalPrice, 0);
 
   // Task metrics
   const totalTasks = state.tasks.length;
@@ -53,7 +50,7 @@ const Analytics: React.FC = () => {
   }).length;
 
   // Average project value
-  const avgProjectValue = totalClients > 0 ? Math.round(potentialRevenue / totalClients) : 0;
+  const avgProjectValue = totalClients > 0 ? Math.round(clientRevenue / totalClients) : 0;
 
   // Format currency
   const formatCurrency = (amount: number) => {
@@ -90,7 +87,7 @@ const Analytics: React.FC = () => {
             <Euro size={20} className="opacity-60" />
           </div>
           <p className="text-3xl font-bold">{formatCurrency(totalRevenue)}</p>
-          <p className="text-xs opacity-60 mt-1">su {formatCurrency(potentialRevenue)} potenziale</p>
+          <p className="text-xs opacity-60 mt-1">{totalClients} clienti</p>
         </div>
 
         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
@@ -201,21 +198,6 @@ const Analytics: React.FC = () => {
                 <p className="text-2xl font-bold text-green-600">{formatCurrency(totalRevenue)}</p>
               </div>
               <CheckCircle2 size={32} className="text-green-400" />
-            </div>
-
-            <div className="pt-4 border-t border-gray-100">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-gray-500">Percentuale incassata</span>
-                <span className="font-bold text-primary">
-                  {potentialRevenue > 0 ? Math.round((totalRevenue / potentialRevenue) * 100) : 0}%
-                </span>
-              </div>
-              <div className="w-full bg-gray-100 h-3 rounded-full overflow-hidden">
-                <div
-                  className="bg-primary h-full transition-all duration-500"
-                  style={{ width: `${potentialRevenue > 0 ? (totalRevenue / potentialRevenue) * 100 : 0}%` }}
-                />
-              </div>
             </div>
           </div>
         </div>

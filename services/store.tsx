@@ -378,13 +378,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const deleteClient = async (clientId: string): Promise<void> => {
     if (!user) throw new Error('Not authenticated');
 
-    // Find the client to get their payment total before deletion
+    // Find the client to preserve their totalPrice before deletion
     const client = state.clients.find((c) => c.id === clientId);
-    if (client) {
-      const clientRevenue = client.payments.reduce((sum, p) => sum + p.amount, 0);
-      if (clientRevenue > 0) {
-        dispatch({ type: 'ADD_ARCHIVED_REVENUE', payload: clientRevenue });
-      }
+    if (client && client.totalPrice > 0) {
+      dispatch({ type: 'ADD_ARCHIVED_REVENUE', payload: client.totalPrice });
     }
 
     await api.deleteClient(clientId);
