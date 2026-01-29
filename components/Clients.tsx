@@ -153,7 +153,7 @@ const Clients: React.FC = () => {
     if (!selectedClient) return;
 
     const clientIdentifier = selectedClient.instagramHandle || selectedClient.company || selectedClient.name;
-    if (!window.confirm(`Sei sicuro di voler eliminare ${clientIdentifier}?`)) return;
+    if (!window.confirm(`Sei sicuro di voler eliminare ${clientIdentifier}?\n\nTutte le attività associate verranno eliminate. I pagamenti ricevuti rimarranno nel totale incassato.`)) return;
 
     setIsSubmitting(true);
     try {
@@ -269,6 +269,14 @@ const Clients: React.FC = () => {
               >
                 {isSubmitting ? <Loader2 size={18} className="animate-spin" /> : <Archive size={18} />}
                 {selectedClient.status === ProjectStatus.ARCHIVED ? 'Archiviato' : 'Archivia'}
+              </button>
+              <button
+                onClick={handleDeleteClient}
+                disabled={isSubmitting}
+                className="flex items-center gap-2 bg-red-500/80 hover:bg-red-500 px-4 py-2 rounded-xl font-bold text-sm disabled:opacity-50"
+              >
+                {isSubmitting ? <Loader2 size={18} className="animate-spin" /> : <Trash2 size={18} />}
+                Elimina
               </button>
             </div>
           </div>

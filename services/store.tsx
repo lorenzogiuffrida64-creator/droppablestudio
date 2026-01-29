@@ -32,6 +32,7 @@ interface State {
   error: string | null;
   recentActivity: Activity[];
   initialized: boolean;
+  archivedRevenue: number;
 }
 
 type Action =
@@ -54,7 +55,22 @@ type Action =
   | { type: 'ADD_NOTE_TO_TASK'; payload: { taskId: string; note: Note } }
   | { type: 'ADD_PAYMENT'; payload: { clientId: string; payment: Payment } }
   | { type: 'ADD_ACTIVITY'; payload: Activity }
-  | { type: 'SET_TEAM_STATUS'; payload: { id: string; status: 'online' | 'offline' } };
+  | { type: 'SET_TEAM_STATUS'; payload: { id: string; status: 'online' | 'offline' } }
+  | { type: 'ADD_ARCHIVED_REVENUE'; payload: number };
+
+const ARCHIVED_REVENUE_KEY = 'crm_archived_revenue';
+
+const getArchivedRevenue = (): number => {
+  if (typeof window === 'undefined') return 0;
+  const stored = localStorage.getItem(ARCHIVED_REVENUE_KEY);
+  return stored ? parseFloat(stored) : 0;
+};
+
+const saveArchivedRevenue = (amount: number): void => {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(ARCHIVED_REVENUE_KEY, amount.toString());
+  }
+};
 
 const initialState: State = {
   clients: [],
@@ -65,6 +81,7 @@ const initialState: State = {
   error: null,
   recentActivity: [],
   initialized: false,
+  archivedRevenue: 0,
 };
 
 const storeContext = createContext<{
@@ -182,13 +199,24 @@ function reducer(state: State, action: Action): State {
           m.id === action.payload.id ? { ...m, status: action.payload.status } : m
         ),
       };
+    case 'ADD_ARCHIVED_REVENUE': {
+      const newArchivedRevenue = state.archivedRevenue + action.payload;
+      saveArchivedRevenue(newArchivedRevenue);
+      return {
+        ...state,
+        archivedRevenue: newArchivedRevenue,
+      };
+    }
     default:
       return state;
   }
 }
 
 export function StoreProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(reducer, initialState);
+  const [state, dispatch] = useReducer(reducer, initialState, (initial) => ({
+    ...initial,
+    archivedRevenue: getArchivedRevenue(),
+  }));
   const { user } = useAuth();
 
   // Load initial data
@@ -349,6 +377,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const deleteClient = async (clientId: string): Promise<void> => {
     if (!user) throw new Error('Not authenticated');
+
+    // Find the client to get their payment total before deletion
+    const client = state.clients.find((c) => c.id === clientId);
+    if (client) {
+      const clientRevenue = client.payments.reduce((sum, p) => sum + p.amount, 0);
+      if (clientRevenue > 0) {
+        dispatch({ type: 'ADD_ARCHIVED_REVENUE', payload: clientRevenue });
+      }
+    }
 
     await api.deleteClient(clientId);
     dispatch({ type: 'DELETE_CLIENT', payload: clientId });

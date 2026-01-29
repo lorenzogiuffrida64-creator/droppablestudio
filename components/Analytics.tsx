@@ -17,10 +17,11 @@ const Analytics: React.FC = () => {
   const completedClients = state.clients.filter(c => c.status === ProjectStatus.COMPLETED).length;
   const archivedClients = state.clients.filter(c => c.status === ProjectStatus.ARCHIVED).length;
 
-  // Revenue metrics
-  const totalRevenue = state.clients.reduce((sum, c) =>
+  // Revenue metrics (includes archived revenue from deleted clients)
+  const clientRevenue = state.clients.reduce((sum, c) =>
     sum + c.payments.reduce((pSum, p) => pSum + p.amount, 0), 0
   );
+  const totalRevenue = clientRevenue + state.archivedRevenue;
   const potentialRevenue = state.clients.reduce((sum, c) => sum + c.totalPrice, 0);
 
   // Task metrics
