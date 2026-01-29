@@ -130,18 +130,6 @@ const Layout: React.FC<LayoutProps> = ({ children, activeView, onViewChange }) =
               <span className="font-medium">{loggingOut ? 'Uscita...' : 'Esci'}</span>
             </button>
           </nav>
-
-          {/* Promotion Card */}
-          <div className="p-4 mx-4 mb-6 bg-primary rounded-2xl text-white relative overflow-hidden">
-             <div className="relative z-10">
-               <p className="text-xs font-medium opacity-80">Scarica la nostra</p>
-               <p className="font-bold text-sm mb-3">App Mobile</p>
-               <button className="bg-secondary text-primary font-bold text-[10px] px-4 py-2 rounded-lg hover:brightness-110 transition-all">
-                 Scarica
-               </button>
-             </div>
-             <div className="absolute -right-4 -bottom-4 w-20 h-20 bg-secondary/20 rounded-full blur-xl"></div>
-          </div>
         </div>
       </aside>
 
