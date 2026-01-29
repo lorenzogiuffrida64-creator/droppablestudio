@@ -17,8 +17,9 @@ const Payments: React.FC = () => {
     }))
   ).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-  // Calculate totals
-  const totalPaid = allPayments.reduce((sum, p) => sum + p.amount, 0);
+  // Calculate totals (includes archived revenue from deleted clients)
+  const currentPayments = allPayments.reduce((sum, p) => sum + p.amount, 0);
+  const totalPaid = currentPayments + state.archivedRevenue;
   const formatAmount = (amount: number) => {
     if (amount >= 1000) {
       return `${(amount / 1000).toFixed(1).replace('.0', '')}k`;

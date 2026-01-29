@@ -26,11 +26,12 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
   const completedProjects = state.clients.filter(c => c.status === ProjectStatus.COMPLETED).length;
   const activeProjects = state.clients.filter(c => c.status === ProjectStatus.ACTIVE).length;
 
-  // Calculate total paid amount
-  const totalPaid = state.clients.reduce((sum, client) => {
-    const clientPayments = client.payments?.reduce((pSum, p) => pSum + p.amount, 0) || 0;
-    return sum + clientPayments;
+  // Calculate total paid amount (includes archived revenue from deleted clients)
+  const clientPayments = state.clients.reduce((sum, client) => {
+    const payments = client.payments?.reduce((pSum, p) => pSum + p.amount, 0) || 0;
+    return sum + payments;
   }, 0);
+  const totalPaid = clientPayments + state.archivedRevenue;
 
   // Format amount like "1.2k" or "12.5k"
   const formatAmount = (amount: number) => {
