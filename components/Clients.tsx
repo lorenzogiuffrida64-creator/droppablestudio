@@ -171,6 +171,9 @@ const Clients: React.FC = () => {
 
     setIsSubmitting(true);
     try {
+      // First, mark all client tasks as complete
+      await actions.completeClientTasks(selectedClient.id);
+      // Then update client status
       await actions.updateClient(selectedClient.id, { status: ProjectStatus.COMPLETED });
     } catch (err) {
       console.error('Failed to complete client:', err);
@@ -184,6 +187,9 @@ const Clients: React.FC = () => {
 
     setIsSubmitting(true);
     try {
+      // First, mark all client tasks as complete
+      await actions.completeClientTasks(selectedClient.id);
+      // Then update client status
       await actions.updateClient(selectedClient.id, { status: ProjectStatus.ARCHIVED });
     } catch (err) {
       console.error('Failed to archive client:', err);
@@ -204,11 +210,16 @@ const Clients: React.FC = () => {
     }
   };
 
-  const filteredClients = state.clients.filter(c =>
-    (c.instagramHandle || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-    c.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    c.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredClients = state.clients.filter(c => {
+    const query = searchQuery.toLowerCase().trim();
+    if (!query) return true;
+
+    return (
+      (c.instagramHandle || '').toLowerCase().includes(query) ||
+      (c.company || '').toLowerCase().includes(query) ||
+      (c.name || '').toLowerCase().includes(query)
+    );
+  });
 
   const togglePackageSelection = (packageId: string) => {
     setNewClient(prev => {
@@ -687,7 +698,9 @@ const Clients: React.FC = () => {
                 <div className="flex flex-col items-end gap-1">
                   <span className={`text-[10px] font-bold px-3 py-1 rounded-full ${
                     client.status === ProjectStatus.ACTIVE ? 'bg-blue-100 text-blue-600' :
-                    client.status === ProjectStatus.COMPLETED ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-600'
+                    client.status === ProjectStatus.COMPLETED ? 'bg-green-100 text-green-600' :
+                    client.status === ProjectStatus.ARCHIVED ? 'bg-red-100 text-red-600' :
+                    'bg-gray-100 text-gray-600'
                   }`}>
                     {client.status}
                   </span>

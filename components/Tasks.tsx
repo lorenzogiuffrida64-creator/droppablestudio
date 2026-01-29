@@ -13,18 +13,27 @@ const Tasks: React.FC = () => {
   const [expandedClient, setExpandedClient] = useState<string | null>(null);
   const [updatingTask, setUpdatingTask] = useState<string | null>(null);
 
-  // Group tasks by client - only show pending tasks
+  // Group tasks by client - show ALL tasks (including completed)
   const clientsWithTasks = state.clients.map(client => {
-    const allTasks = state.tasks.filter(t => t.clientId === client.id);
-    const pendingTasks = allTasks.filter(t => t.status !== TaskStatus.COMPLETE);
+    const allTasks = state.tasks
+      .filter(t => t.clientId === client.id)
+      .sort((a, b) => {
+        // Pending tasks first, then completed
+        if (a.status === TaskStatus.COMPLETE && b.status !== TaskStatus.COMPLETE) return 1;
+        if (a.status !== TaskStatus.COMPLETE && b.status === TaskStatus.COMPLETE) return -1;
+        // Then sort by scheduled date
+        return new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime();
+      });
     const completedCount = allTasks.filter(t => t.status === TaskStatus.COMPLETE).length;
+    const pendingCount = allTasks.filter(t => t.status !== TaskStatus.COMPLETE).length;
     return {
       client,
-      tasks: pendingTasks, // Only show pending tasks
+      tasks: allTasks, // Show ALL tasks
       completedCount,
+      pendingCount,
       totalCount: allTasks.length,
     };
-  }).filter(item => item.tasks.length > 0); // Only show clients with pending tasks
+  }).filter(item => item.tasks.length > 0); // Show clients with ANY tasks
 
   const handleMarkTaskDone = async (task: Task) => {
     setUpdatingTask(task.id);
@@ -68,7 +77,7 @@ const Tasks: React.FC = () => {
 
       {clientsWithTasks.length > 0 ? (
         <div className="space-y-4">
-          {clientsWithTasks.map(({ client, tasks, completedCount, totalCount }) => {
+          {clientsWithTasks.map(({ client, tasks, completedCount, pendingCount, totalCount }) => {
             const isExpanded = expandedClient === client.id;
             const progress = getProgressPercentage(completedCount, totalCount);
             const pkg = state.packages.find(p => p.id === client.packageId || p.name === client.packageName);
@@ -105,7 +114,9 @@ const Tasks: React.FC = () => {
                       {/* Progress */}
                       <div className="text-right">
                         <p className="text-2xl font-bold text-primary">{progress}%</p>
-                        <p className="text-xs text-gray-400">{tasks.length} da fare</p>
+                        <p className="text-xs text-gray-400">
+                          {pendingCount > 0 ? `${pendingCount} da fare` : 'Tutto completato'}
+                        </p>
                       </div>
 
                       {/* Progress Bar */}

@@ -244,6 +244,20 @@ export async function updateTask(
   return data;
 }
 
+export async function updateTasksByClient(
+  clientId: string,
+  updates: Partial<Task>
+): Promise<Task[]> {
+  const { data, error } = await supabase
+    .from('tasks')
+    .update(updates)
+    .eq('client_id', clientId)
+    .select();
+
+  if (error) throw error;
+  return data || [];
+}
+
 export async function createTasksFromPackage(
   clientId: string,
   packageId: string,

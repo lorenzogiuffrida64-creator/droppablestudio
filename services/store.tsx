@@ -48,6 +48,7 @@ type Action =
   | { type: 'DELETE_CLIENT'; payload: string }
   | { type: 'ADD_TASKS'; payload: Task[] }
   | { type: 'UPDATE_TASK'; payload: Task }
+  | { type: 'UPDATE_TASKS_BATCH'; payload: Task[] }
   | { type: 'ADD_NOTE_TO_CLIENT'; payload: { clientId: string; note: Note } }
   | { type: 'DELETE_NOTE_FROM_CLIENT'; payload: { clientId: string; noteId: string } }
   | { type: 'ADD_NOTE_TO_TASK'; payload: { taskId: string; note: Note } }
@@ -74,6 +75,7 @@ const storeContext = createContext<{
     updateClient: (clientId: string, updates: Partial<Client>) => Promise<void>;
     deleteClient: (clientId: string) => Promise<void>;
     updateTask: (taskId: string, status: TaskStatus) => Promise<void>;
+    completeClientTasks: (clientId: string) => Promise<void>;
     addClientNote: (clientId: string, content: string, category: Note['category']) => Promise<void>;
     deleteClientNote: (clientId: string, noteId: string) => Promise<void>;
     addTaskNote: (taskId: string, content: string, category: Note['category']) => Promise<void>;
@@ -123,6 +125,14 @@ function reducer(state: State, action: Action): State {
         tasks: state.tasks.map((t) =>
           t.id === action.payload.id ? action.payload : t
         ),
+      };
+    case 'UPDATE_TASKS_BATCH':
+      return {
+        ...state,
+        tasks: state.tasks.map((t) => {
+          const updated = action.payload.find((u) => u.id === t.id);
+          return updated || t;
+        }),
       };
     case 'ADD_NOTE_TO_CLIENT':
       return {
@@ -369,6 +379,27 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const completeClientTasks = async (clientId: string): Promise<void> => {
+    if (!user) throw new Error('Not authenticated');
+
+    const updates: Partial<api.Task> = {
+      status: 'completed',
+      completed_at: new Date().toISOString(),
+      completed_by: user.id,
+    };
+
+    await api.updateTasksByClient(clientId, updates);
+
+    // Update local state
+    const updatedTasks = state.tasks
+      .filter((t) => t.clientId === clientId)
+      .map((t) => ({ ...t, status: TaskStatus.COMPLETE }));
+
+    if (updatedTasks.length > 0) {
+      dispatch({ type: 'UPDATE_TASKS_BATCH', payload: updatedTasks });
+    }
+  };
+
   const addClientNote = async (
     clientId: string,
     content: string,
@@ -490,6 +521,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     updateClient,
     deleteClient,
     updateTask,
+    completeClientTasks,
     addClientNote,
     deleteClientNote,
     addTaskNote,

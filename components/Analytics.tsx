@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  TrendingUp, Users, Euro, CheckCircle2, Clock,
+  TrendingUp, Users, Euro, CheckCircle2,
   BarChart3, PieChart, Activity, Loader2, Calendar
 } from 'lucide-react';
 import { useStore } from '../services/store';
@@ -22,7 +22,6 @@ const Analytics: React.FC = () => {
     sum + c.payments.reduce((pSum, p) => pSum + p.amount, 0), 0
   );
   const potentialRevenue = state.clients.reduce((sum, c) => sum + c.totalPrice, 0);
-  const pendingRevenue = potentialRevenue - totalRevenue;
 
   // Task metrics
   const totalTasks = state.tasks.length;
@@ -201,14 +200,6 @@ const Analytics: React.FC = () => {
                 <p className="text-2xl font-bold text-green-600">{formatCurrency(totalRevenue)}</p>
               </div>
               <CheckCircle2 size={32} className="text-green-400" />
-            </div>
-
-            <div className="flex items-center justify-between p-4 bg-yellow-50 rounded-xl">
-              <div>
-                <p className="text-sm text-gray-600">Da Incassare</p>
-                <p className="text-2xl font-bold text-yellow-600">{formatCurrency(pendingRevenue)}</p>
-              </div>
-              <Clock size={32} className="text-yellow-400" />
             </div>
 
             <div className="pt-4 border-t border-gray-100">
